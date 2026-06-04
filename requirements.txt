@@ -1,0 +1,5 @@
+pydantic>=2.0
+whisper
+torch>=2.0
+mcp
+pytest>=8.0
