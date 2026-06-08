@@ -60,8 +60,8 @@
     },
     {
       "parameters": {
-        "endpointUrl": "http://127.0.0.1:8000/sse",
-        "serverTransport": "sse",
+        "endpointUrl": "http://127.0.0.1:8000/mcp",
+        "serverTransport": "streamableHttp",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",

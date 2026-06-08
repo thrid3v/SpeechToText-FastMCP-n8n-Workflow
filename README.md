@@ -1,6 +1,6 @@
 # 🎙️ MCP Audio Server
 
-A **Model Context Protocol (MCP)** server that gives AI agents the ability to process audio files — transcribe speech to text, detect spoken languages, and extract audio metadata. Built with [OpenAI Whisper](https://github.com/openai/whisper) and served over **SSE (Server-Sent Events)** transport for seamless integration with any MCP-compatible client.
+A **Model Context Protocol (MCP)** server that gives AI agents the ability to process audio files — transcribe speech to text, detect spoken languages, and extract audio metadata. Built with [OpenAI Whisper](https://github.com/openai/whisper) and served over **Streamable HTTP** transport for seamless integration with any MCP-compatible client.
 
 ---
 
@@ -16,7 +16,7 @@ A **Model Context Protocol (MCP)** server that gives AI agents the ability to pr
 
 - 🧠 **Thread-safe model caching** — Whisper models are loaded once and reused across requests
 - 🔒 **Strict input validation** — All inputs are validated with Pydantic (file existence, extension support, model size)
-- 📡 **SSE transport** — HTTP-based transport accessible by any MCP client over the network
+- 📡 **Streamable HTTP transport** — stateless HTTP transport accessible by any MCP client over the network
 - 🎛️ **Multiple Whisper models** — Choose from `tiny`, `base`, `small`, `medium`, or `large` depending on accuracy/speed tradeoff
 - 🎵 **Wide format support** — `.mp3`, `.wav`, `.flac`, `.m4a`, `.ogg`, `.mp4`, `.aac`
 
@@ -26,7 +26,7 @@ A **Model Context Protocol (MCP)** server that gives AI agents the ability to pr
 
 ```
 mcp-audio-server/
-├── server.py              # MCP server entry point — registers tools, runs SSE transport
+├── server.py              # MCP server entry point — registers tools, runs Streamable HTTP transport
 ├── audio_processor.py     # Core processing logic — transcription, language detection, metadata
 ├── models.py              # Pydantic models — request validation & standardized response format
 ├── requirements.txt       # Python dependencies
@@ -86,12 +86,11 @@ pip install -r requirements.txt
 python server.py
 ```
 
-The server starts on **`http://127.0.0.1:8000`** with the following endpoints:
+The server starts on **`http://127.0.0.1:8000`** with the following endpoint:
 
 | Endpoint | Purpose |
 |---|---|
-| `http://127.0.0.1:8000/sse` | SSE connection endpoint for MCP clients |
-| `http://127.0.0.1:8000/messages/` | JSON-RPC message endpoint |
+| `http://127.0.0.1:8000/mcp` | Streamable HTTP endpoint for MCP clients |
 
 ---
 
@@ -106,8 +105,8 @@ npx @modelcontextprotocol/inspector
 ```
 
 1. Open the Inspector UI in your browser
-2. Set **Transport Type** → `SSE`
-3. Set **URL** → `http://127.0.0.1:8000/sse`
+2. Set **Transport Type** → `Streamable HTTP`
+3. Set **URL** → `http://127.0.0.1:8000/mcp`
 4. Click **Connect**
 5. Select any tool and provide an absolute path to an audio file
 
@@ -148,7 +147,7 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "audio-server": {
-      "url": "http://127.0.0.1:8000/sse"
+      "url": "http://127.0.0.1:8000/mcp"
     }
   }
 }
@@ -156,7 +155,7 @@ Add to your `claude_desktop_config.json`:
 
 ### Any MCP Client
 
-Connect to the SSE endpoint at `http://127.0.0.1:8000/sse` using any MCP-compatible client. The server exposes three tools that are automatically discoverable through the MCP protocol.
+Connect to `http://127.0.0.1:8000/mcp` using any MCP-compatible client that supports Streamable HTTP. The server exposes three tools that are automatically discoverable through the MCP protocol.
 
 ---
 
@@ -256,7 +255,7 @@ All tools return a standardized error format on failure:
 │                     MCP Client                          │
 │         (Claude, n8n, Inspector, etc.)                  │
 └──────────────────────┬──────────────────────────────────┘
-                       │ SSE (HTTP)
+                       │ Streamable HTTP
                        ▼
 ┌──────────────────────────────────────────────────────────┐
 │  server.py — FastMCP Server                              │

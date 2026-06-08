@@ -77,5 +77,5 @@ def get_audio_metadata(audio_path: str) -> str:
         return MCPResult(status="error", message="Internal server error while extracting audio metadata.").to_json()
 
 if __name__ == "__main__":
-    logger.info("Initializing Modular Speech-to-Text SSE Transport Loop...")
-    mcp.run(transport="sse")
+    logger.info("Initializing Modular Speech-to-Text Streamable HTTP Transport Loop...")
+    mcp.run(transport="streamable-http")
