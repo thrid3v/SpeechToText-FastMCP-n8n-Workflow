@@ -1,5 +1,43 @@
+# ---------------------------------------------------------------------------
+# Python dependencies  —  install with:  pip install -r requirements.txt
+# Tested on Python 3.10+
+# ---------------------------------------------------------------------------
+
+# MCP server framework (FastMCP + Streamable HTTP transport)
+mcp>=1.27.2
+
+# Input validation & response models (uses the Pydantic v2 API)
 pydantic>=2.0
-openai-whisper
+
+# OpenAI Whisper — speech-to-text + language detection.
+# IMPORTANT: the package is "openai-whisper", NOT "whisper".
+# The PyPI package named "whisper" is an unrelated time-series database and
+# does NOT provide load_model()/load_audio() — installing it breaks the server.
+openai-whisper>=20250625
+
+# PyTorch — Whisper's inference backend (pulled in by openai-whisper, pinned
+# here for clarity). `pip install` grabs the CPU build by default; for CUDA/GPU
+# acceleration install the matching build from https://pytorch.org first.
 torch>=2.0
-mcp
+
+# ---------------------------------------------------------------------------
+# Test-only dependency (needed solely to run `pytest tests/`)
+# ---------------------------------------------------------------------------
 pytest>=8.0
+
+# ===========================================================================
+# SYSTEM DEPENDENCY — *NOT* installable via pip, install separately on the OS
+# ===========================================================================
+# ffmpeg provides BOTH the `ffmpeg` and `ffprobe` commands and must be on PATH:
+#   - Whisper shells out to `ffmpeg` to decode/load audio
+#   - get_audio_metadata shells out to `ffprobe`
+# Without it, transcription, language detection, and metadata extraction fail.
+#
+#   Windows : winget install ffmpeg        (or: choco install ffmpeg)
+#   macOS   : brew install ffmpeg
+#   Linux   : sudo apt install ffmpeg
+#
+# Verify the install (both must print a version):
+#   ffmpeg -version
+#   ffprobe -version
+# ===========================================================================
