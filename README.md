@@ -16,7 +16,7 @@ A **Model Context Protocol (MCP)** server that gives AI agents the ability to pr
 
 - 🧠 **Thread-safe model caching** — Whisper models are loaded once and reused across requests
 - 🔒 **Strict input validation** — All inputs are validated with Pydantic (file existence, extension support, model size)
-- 📡 **Streamable HTTP transport** — stateless HTTP transport accessible by any MCP client over the network
+- 📡 **Streamable HTTP transport** — served over Streamable HTTP at `127.0.0.1:8000/mcp`; binds to loopback by default, so the MCP client must be able to reach that host (clients in Docker or on another machine need extra networking — see below)
 - 🎛️ **Multiple Whisper models** — Choose from `tiny`, `base`, `small`, `medium`, or `large` depending on accuracy/speed tradeoff
 - 🎵 **Wide format support** — `.mp3`, `.wav`, `.flac`, `.m4a`, `.ogg`, `.mp4`, `.aac`
 
@@ -92,6 +92,8 @@ The server starts on **`http://127.0.0.1:8000`** with the following endpoint:
 |---|---|
 | `http://127.0.0.1:8000/mcp` | Streamable HTTP endpoint for MCP clients |
 
+> **Note:** The server binds to `127.0.0.1` (loopback) and maintains per-session state over Streamable HTTP (it issues an `Mcp-Session-Id`), so it is only reachable from the **same machine**. If your MCP client runs elsewhere — n8n in Docker, or a different host — it must connect to an address that can reach this machine, not `127.0.0.1`. For Docker on the same machine, use `http://host.docker.internal:8000/mcp`.
+
 ---
 
 ## 🧪 Testing
@@ -136,8 +138,10 @@ Chat Trigger → AI Agent → Google Gemini LLM
 2. Go to **Workflows** → **Import from File**
 3. Select `speech-text-MCP.json`
 4. Configure your Google Gemini API credentials in the **Google Gemini Chat Model** node
-5. Ensure this MCP server is running on `http://127.0.0.1:8000`
+5. Ensure this MCP server is running and reachable from n8n. If n8n runs natively on the same machine, the bundled `http://127.0.0.1:8000/mcp` endpoint works as-is. **If n8n runs in Docker, edit the MCP Client node to use `http://host.docker.internal:8000/mcp`** — inside the container, `127.0.0.1` points at the container itself, not your host.
 6. Activate the workflow and start chatting — the AI agent can now transcribe audio, detect languages, and extract metadata on demand
+
+> **Note on chat models:** The agent can only invoke these MCP tools if its chat model supports **function/tool calling**. The bundled workflow uses Google Gemini, which does. If you swap in another model (e.g. via OpenRouter), pick one that advertises tool/function-calling support — many free or base models don't, and the agent will silently answer without ever calling the tools.
 
 ### Claude Desktop
 
@@ -155,7 +159,7 @@ Add to your `claude_desktop_config.json`:
 
 ### Any MCP Client
 
-Connect to `http://127.0.0.1:8000/mcp` using any MCP-compatible client that supports Streamable HTTP. The server exposes three tools that are automatically discoverable through the MCP protocol.
+Connect to `http://127.0.0.1:8000/mcp` using any MCP-compatible client that supports Streamable HTTP, provided the client can reach the server's host (the server binds to loopback by default — see the note under [Start the server](#3-start-the-server)). The server exposes three tools that are automatically discoverable through the MCP protocol.
 
 ---
 
